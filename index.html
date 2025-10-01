@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Scanner AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #1a1a1a;
+            background-image: linear-gradient(rgba(26, 26, 26, 0.85), rgba(26, 26, 26, 0.85)), url('https://images.unsplash.com/photo-1552091766-3507425455a2?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+        .wine-card {
+            background-color: rgba(30, 30, 30, 0.9);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .action-button {
+            border: 2px solid rgba(209, 159, 81, 0.5);
+            transition: all 0.3s ease;
+            background-color: rgba(209, 159, 81, 0.05);
+        }
+        .action-button:hover {
+            border-color: #d19f51;
+            background-color: rgba(209, 159, 81, 0.1);
+        }
+        .loader {
+            border-top-color: #d19f51;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        .gemini-button {
+            background-image: linear-gradient(to right, #f9d423 0%, #ff8c00 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px 0 rgba(252, 165, 34, 0.4);
+        }
+        .gemini-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(252, 165, 34, 0.5);
+        }
+    </style>
+</head>
+<body class="text-gray-200 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl mx-auto">
+        <header class="text-center mb-8">
+            <img src="https://i.imgur.com/Sag0iXx.png" alt="Logo" class="mx-auto mb-4 h-24">
+            <h1 class="text-5xl font-bold text-white mb-2">Wine Scanner AI</h1>
+            <p class="text-lg text-amber-300">Scatta una foto all'etichetta di un vino per scoprirne i segreti.</p>
+        </header>
+
+        <main id="app-container" class="wine-card rounded-2xl shadow-2xl p-6 sm:p-8 transition-all duration-500">
+            <!-- Sezione di Upload -->
+            <div id="upload-section">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button id="upload-button" class="action-button flex-1 rounded-lg p-6 text-center cursor-pointer">
+                        <div class="flex flex-col items-center justify-center space-y-3">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                             </svg>
+                             <span class="font-semibold text-amber-300">Carica dalla Galleria</span>
+                        </div>
+                    </button>
+                    <button id="camera-button" class="action-button flex-1 rounded-lg p-6 text-center cursor-pointer">
+                        <div class="flex flex-col items-center justify-center space-y-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.776 48.776 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
+                            </svg>
+                            <span class="font-semibold text-amber-300">Usa la Fotocamera</span>
+                        </div>
+                    </button>
+                </div>
+                <input type="file" id="file-input" class="hidden" accept="image/*">
+                <img id="image-preview" src="" alt="Anteprima vino" class="hidden rounded-lg mt-6 max-h-80 mx-auto"/>
+            </div>
+
+            <!-- Sezione di Caricamento -->
+            <div id="loading-section" class="hidden text-center py-10">
+                <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-600 h-12 w-12 mx-auto mb-4"></div>
+                <p class="text-lg text-amber-300">Analizzo il vino... questo potrebbe richiedere un momento.</p>
+            </div>
+
+            <!-- Sezione dei Risultati -->
+            <div id="results-section" class="hidden space-y-6">
+                <div class="text-center pb-4 border-b border-gray-700">
+                    <h2 id="wine-name" class="text-3xl font-bold text-amber-300"></h2>
+                    <p id="wine-producer" class="text-lg text-gray-400"></p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Vitigni</h3>
+                        <p id="wine-grapes" class="text-gray-300"></p>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white mb-2">Provenienza</h3>
+                        <p id="wine-origin" class="text-gray-300"></p>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-700 space-y-4">
+                    <h3 class="text-2xl font-bold text-center text-white -mb-2">Focus sul Produttore</h3>
+                    <div>
+                        <h4 class="text-lg font-semibold text-amber-300">Regione di Produzione</h4>
+                        <p id="wine-region" class="text-gray-300 mt-1 whitespace-pre-wrap"></p>
+                    </div>
+                     <div>
+                        <h4 class="text-lg font-semibold text-amber-300">Storia del Produttore</h4>
+                        <p id="producer-history" class="text-gray-300 mt-1 whitespace-pre-wrap"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-amber-300">Altre Etichette Rinomate</h4>
+                        <p id="best-labels" class="text-gray-300 mt-1 whitespace-pre-wrap"></p>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-700">
+                    <h3 class="text-xl font-semibold text-white mb-2">Pregi e Difetti</h3>
+                    <p id="wine-pros-cons" class="text-gray-300 whitespace-pre-wrap"></p>
+                </div>
+
+                <div class="space-y-4 pt-4 border-t border-gray-700">
+                     <h3 class="text-2xl font-bold text-center text-white mb-2">Guida alla Degustazione e Difetti</h3>
+                    <div>
+                        <h4 class="text-lg font-semibold text-amber-300">Analisi Visiva (Colore)</h4>
+                        <p id="analysis-color" class="text-gray-300 mt-1"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-amber-300">Analisi Olfattiva (Profumo)</h4>
+                        <p id="analysis-smell" class="text-gray-300 mt-1"></p>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-amber-300">Analisi Gustativa (Sapore)</h4>
+                        <p id="analysis-taste" class="text-gray-300 mt-1"></p>
+                    </div>
+                </div>
+
+                <!-- Sezione Suggerimenti Gemini -->
+                <div id="suggestions-container" class="pt-6 border-t border-gray-700">
+                    <div id="get-suggestions-section" class="text-center">
+                        <button id="get-suggestions-button" class="gemini-button text-gray-900 font-bold py-3 px-8 rounded-lg text-lg">
+                            ✨ Chiedi al Sommelier AI
+                        </button>
+                    </div>
+                    <div id="suggestions-loading" class="hidden text-center py-5">
+                        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-600 h-8 w-8 mx-auto mb-3"></div>
+                        <p class="text-amber-300">Il nostro Sommelier AI sta pensando...</p>
+                    </div>
+                    <div id="suggestions-results" class="hidden space-y-4">
+                         <h3 class="text-2xl font-bold text-center text-white mb-2">Consigli del Sommelier</h3>
+                         <div>
+                            <h4 class="text-lg font-semibold text-amber-300">Abbinamenti Gastronomici</h4>
+                            <p id="food-pairing" class="text-gray-300 mt-1 whitespace-pre-wrap"></p>
+                         </div>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="text-lg font-semibold text-amber-300">Temperatura di Servizio</h4>
+                                <p id="serving-temp" class="text-gray-300 mt-1"></p>
+                            </div>
+                            <div>
+                                <h4 class="text-lg font-semibold text-amber-300">Bicchiere Consigliato</h4>
+                                <p id="glassware-type" class="text-gray-300 mt-1"></p>
+                            </div>
+                         </div>
+                    </div>
+                </div>
+                
+                <div class="pt-6 text-center flex flex-wrap justify-center gap-4">
+                    <button id="reset-button" class="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-6 rounded-lg transition-colors">Analizza un altro vino</button>
+                    <button id="download-button" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2 -mt-1" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                        Scarica Info
+                    </button>
+                </div>
+            </div>
+
+             <!-- Sezione Errore -->
+            <div id="error-section" class="hidden text-center py-10 bg-red-900/50 rounded-lg">
+                <p class="text-lg text-red-300">Si è verificato un errore.</p>
+                <p id="error-message" class="text-sm text-red-400 mt-2"></p>
+                <button id="error-reset-button" class="mt-4 bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-6 rounded-lg transition-colors">Riprova</button>
+            </div>
+        </main>
+    </div>
+
+<script>
+    const uploadSection = document.getElementById('upload-section');
+    const loadingSection = document.getElementById('loading-section');
+    const resultsSection = document.getElementById('results-section');
+    const errorSection = document.getElementById('error-section');
+    
+    const uploadButton = document.getElementById('upload-button');
+    const cameraButton = document.getElementById('camera-button');
+    const fileInput = document.getElementById('file-input');
+    const imagePreview = document.getElementById('image-preview');
+    
+    const resetButton = document.getElementById('reset-button');
+    const downloadButton = document.getElementById('download-button');
+    const errorResetButton = document.getElementById('error-reset-button');
+
+    const getSuggestionsButton = document.getElementById('get-suggestions-button');
+    const getSuggestionsSection = document.getElementById('get-suggestions-section');
+    const suggestionsLoading = document.getElementById('suggestions-loading');
+    const suggestionsResults = document.getElementById('suggestions-results');
+
+    let currentWineInfo = {};
+
+    // Gestione click pulsanti
+    uploadButton.addEventListener('click', () => {
+        fileInput.removeAttribute('capture');
+        fileInput.click();
+    });
+
+    cameraButton.addEventListener('click', () => {
+        fileInput.setAttribute('capture', 'environment'); // Usa la fotocamera posteriore
+        fileInput.click();
+    });
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleFile(e.target.files[0]);
+        }
+    });
+
+    resetButton.addEventListener('click', resetUI);
+    errorResetButton.addEventListener('click', resetUI);
+    downloadButton.addEventListener('click', downloadInfoAsTxt);
+    getSuggestionsButton.addEventListener('click', () => getGeminiSuggestions(currentWineInfo));
+
+    function resetUI() {
+        uploadSection.classList.remove('hidden');
+        loadingSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        errorSection.classList.add('hidden');
+        imagePreview.classList.add('hidden');
+        fileInput.value = '';
+        currentWineInfo = {};
+        getSuggestionsSection.classList.remove('hidden');
+        suggestionsLoading.classList.add('hidden');
+        suggestionsResults.classList.add('hidden');
+    }
+
+    function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) {
+            showError("Per favore, seleziona un file immagine valido.");
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            imagePreview.src = e.target.result;
+            imagePreview.classList.remove('hidden');
+            const base64Data = e.target.result.split(',')[1];
+            analyzeImageWithGemini(base64Data);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function analyzeImageWithGemini(base64ImageData) {
+        uploadSection.classList.add('hidden');
+        errorSection.classList.add('hidden');
+        loadingSection.classList.remove('hidden');
+
+        // L'URL del nostro proxy sicuro. Questo percorso dipende da dove pubblicherai la funzione.
+        // Esempi: "/.netlify/functions/gemini-proxy" per Netlify.
+        const proxyUrl = '/.netlify/functions/gemini-proxy'; 
+        
+        const systemPrompt = `Sei un sommelier esperto e uno storico del vino. Analizza l'immagine dell'etichetta di questa bottiglia di vino. Restituisci ESCLUSIVAMENTE un oggetto JSON con la seguente struttura:
+        {
+          "nomeVino": "Nome completo del vino, inclusa l'annata se visibile",
+          "produttore": "Nome della cantina o del produttore",
+          "provenienza": "Regione, sottozona e nazione di origine (es. Montalcino, Toscana, Italia)",
+          "regioneProduzione": "Descrizione della regione di produzione, menzionando le sue caratteristiche climatiche e territoriali principali.",
+          "storiaProduttore": "Una breve ma affascinante storia della cantina, includendo l'anno di fondazione, la filosofia produttiva e figure chiave.",
+          "miglioriEtichette": "Un elenco puntato (usa \\n per separare) delle altre 3-5 etichette più rinomate o premiate prodotte dalla stessa cantina.",
+          "vitigni": "Elenco dei principali vitigni utilizzati",
+          "pregi": "Descrivi i punti di forza del vino: aromi tipici, struttura, equilibrio.",
+          "difettiComuni": "Descrivi i potenziali difetti a cui questo tipo di vino potrebbe essere soggetto e come riconoscerli.",
+          "analisiVisiva": "Descrivi il colore tipico del vino e come un colore anomalo possa indicare un difetto.",
+          "analisiOlfattiva": "Descrivi i profumi caratteristici e come riconoscere difetti comuni dall'odore (es. tappo, ossidazione).",
+          "analisiGustativa": "Descrivi il sapore tipico e come un sapore anomalo possa segnalare un difetto."
+        }
+        Se non riesci a identificare il vino o le informazioni sul produttore, popola i campi con "Informazione non disponibile". Non aggiungere testo prima o dopo il JSON.`;
+        
+        const payload = {
+             // Il payload originale per Gemini viene ora inviato al nostro proxy.
+             type: 'analyze', // Aggiungiamo un tipo per dire al proxy cosa fare
+             data: {
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ parts: [ { inlineData: { mimeType: "image/jpeg", data: base64ImageData } } ] }],
+             }
+        };
+        
+        try {
+            const response = await fetchWithRetry(proxyUrl, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+
+            if (result.error) {
+                 throw new Error(result.error);
+            }
+
+            const candidate = result.candidates?.[0];
+
+            if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                throw new Error("La risposta dell'AI non è valida o è vuota.");
+            }
+
+            let jsonText = candidate.content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(jsonText);
+            displayResults(data);
+
+        } catch (error) {
+            console.error("Errore durante l'analisi dell'immagine:", error);
+            showError(error.message);
+        } finally {
+            loadingSection.classList.add('hidden');
+        }
+    }
+
+    function displayResults(data) {
+        currentWineInfo = data;
+        document.getElementById('wine-name').textContent = data.nomeVino || 'N/A';
+        document.getElementById('wine-producer').textContent = data.produttore || 'N/A';
+        document.getElementById('wine-grapes').textContent = data.vitigni || 'N/A';
+        document.getElementById('wine-origin').textContent = data.provenienza || 'N/A';
+        
+        document.getElementById('wine-region').textContent = data.regioneProduzione || 'N/A';
+        document.getElementById('producer-history').textContent = data.storiaProduttore || 'N/A';
+        document.getElementById('best-labels').textContent = data.miglioriEtichette || 'N/A';
+
+        let prosConsText = `Pregi:\n${data.pregi || 'Non specificati.'}\n\nDifetti Comuni:\n${data.difettiComuni || 'Non specificati.'}`;
+        document.getElementById('wine-pros-cons').textContent = prosConsText;
+
+        document.getElementById('analysis-color').textContent = data.analisiVisiva || 'N/A';
+        document.getElementById('analysis-smell').textContent = data.analisiOlfattiva || 'N/A';
+        document.getElementById('analysis-taste').textContent = data.analisiGustativa || 'N/A';
+        
+        resultsSection.classList.remove('hidden');
+    }
+    
+    async function getGeminiSuggestions(wineInfo) {
+        getSuggestionsSection.classList.add('hidden');
+        suggestionsLoading.classList.remove('hidden');
+
+        const proxyUrl = '/.netlify/functions/gemini-proxy';
+        
+        const userPrompt = `Considerando il seguente vino:
+        - Nome: ${wineInfo.nomeVino}
+        - Vitigni: ${wineInfo.vitigni}
+        - Provenienza: ${wineInfo.provenienza}
+        
+        Fornisci suggerimenti dettagliati.`;
+
+        const systemPrompt = `Sei un sommelier di fama mondiale. Basandoti sui dettagli del vino forniti, offri consigli esperti.
+        Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura:
+        {
+            "abbinamenti": "Un paragrafo descrittivo con abbinamenti ideali, suggerendo piatti specifici per antipasti, primi, secondi e formaggi.",
+            "temperaturaServizio": "La temperatura ideale di servizio in Celsius (es. '16-18 °C').",
+            "bicchiereConsigliato": "Il tipo di bicchiere più adatto per esaltare le caratteristiche del vino (es. 'Calice ampio tipo Bordeaux')."
+        }
+        Non aggiungere testo prima o dopo il JSON.`;
+
+        const payload = {
+            type: 'suggest', // Aggiungiamo un tipo diverso per i suggerimenti
+            data: {
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                contents: [{ parts: [{ text: userPrompt }] }],
+            }
+        };
+
+        try {
+            const response = await fetchWithRetry(proxyUrl, { method: 'POST', body: JSON.stringify(payload) });
+            const result = await response.json();
+
+            if (result.error) {
+                 throw new Error(result.error);
+            }
+
+            const candidate = result.candidates?.[0];
+
+            if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                throw new Error("La risposta del Sommelier AI non è valida.");
+            }
+            
+            let jsonText = candidate.content.parts[0].text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(jsonText);
+            displaySuggestions(data);
+
+        } catch (error) {
+            console.error("Errore nel ricevere i suggerimenti:", error);
+            suggestionsLoading.innerHTML = `<p class="text-red-400">Impossibile caricare i suggerimenti.</p>`;
+        }
+    }
+
+    function displaySuggestions(data) {
+        document.getElementById('food-pairing').textContent = data.abbinamenti || 'N/A';
+        document.getElementById('serving-temp').textContent = data.temperaturaServizio || 'N/A';
+        document.getElementById('glassware-type').textContent = data.bicchiereConsigliato || 'N/A';
+        
+        suggestionsLoading.classList.add('hidden');
+        suggestionsResults.classList.remove('hidden');
+    }
+
+    function downloadInfoAsTxt() {
+        if (!currentWineInfo || Object.keys(currentWineInfo).length === 0) {
+            showError("Nessuna informazione sul vino da scaricare.");
+            return;
+        }
+
+        const foodPairing = document.getElementById('food-pairing').textContent || 'Non richiesto.';
+        const servingTemp = document.getElementById('serving-temp').textContent || 'Non richiesto.';
+        const glasswareType = document.getElementById('glassware-type').textContent || 'Non richiesto.';
+
+        const content = `
+*** WINE SCANNER AI - SCHEDA VINO ***
+
+=====================================
+INFORMAZIONI PRINCIPALI
+=====================================
+- Nome Vino: ${currentWineInfo.nomeVino || 'N/A'}
+- Produttore: ${currentWineInfo.produttore || 'N/A'}
+- Vitigni: ${currentWineInfo.vitigni || 'N/A'}
+- Provenienza: ${currentWineInfo.provenienza || 'N/A'}
+
+=====================================
+FOCUS SUL PRODUTTORE
+=====================================
+Regione di Produzione:
+${currentWineInfo.regioneProduzione || 'N/A'}
+
+Storia del Produttore:
+${currentWineInfo.storiaProduttore || 'N/A'}
+
+Altre Etichette Rinomate:
+${currentWineInfo.miglioriEtichette || 'N/A'}
+
+=====================================
+NOTE DI DEGUSTAZIONE
+=====================================
+Pregi:
+${currentWineInfo.pregi || 'Non specificati.'}
+
+Difetti Comuni:
+${currentWineInfo.difettiComuni || 'Non specificati.'}
+
+Analisi Visiva:
+${currentWineInfo.analisiVisiva || 'N/A'}
+
+Analisi Olfattiva:
+${currentWineInfo.analisiOlfattiva || 'N/A'}
+
+Analisi Gustativa:
+${currentWineInfo.analisiGustativa || 'N/A'}
+
+=====================================
+CONSIGLI DEL SOMMELIER AI
+=====================================
+Abbinamenti Gastronomici:
+${foodPairing}
+
+- Temperatura di Servizio: ${servingTemp}
+- Bicchiere Consigliato: ${glasswareType}
+        `.trim().replace(/^\s+/gm, '');
+
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        const fileName = `info-vino-${(currentWineInfo.nomeVino || 'sconosciuto').replace(/[^a-z0-9]/gi, '_').toLowerCase()}.txt`;
+        
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function showError(message) {
+        document.getElementById('error-message').textContent = message;
+        loadingSection.classList.add('hidden');
+        uploadSection.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        errorSection.classList.remove('hidden');
+    }
+    
+    async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+        while (retries > 0) {
+            try {
+                const response = await fetch(url, options);
+                if (response.ok) return response;
+            } catch (error) {
+                console.warn(`Fetch fallito, ${retries-1} tentativi rimasti.`, error);
+            }
+            retries--;
+            if (retries > 0) {
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2;
+            }
+        }
+        throw new Error("Impossibile contattare l'API del proxy dopo diversi tentativi.");
+    }
+
+</script>
+</body>
+</html>
+
